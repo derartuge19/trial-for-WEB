@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:7712/auth';
+const API_URL = 'http://localhost:7712/auth'; // Ensure this matches your backend API endpoint
+
+// Function to handle signup
 async function signup(username, email, password, firstName, lastName) {
   const response = await fetch(`${API_URL}/signup`, {
     method: 'POST',
@@ -11,8 +13,11 @@ async function signup(username, email, password, firstName, lastName) {
   const data = await response.json();
 
   if (response.ok) {
-    alert('Signup successful!');
-    window.location.href = 'login.html'; // Redirect to login page after successful signup
+    // Store the JWT token in localStorage
+    localStorage.setItem('token', data.access_token);
+
+    // Redirect to the add task page after successful signup
+    window.location.href = 'add-task.html';
   } else {
     alert(data.message || 'Signup failed');
   }
@@ -23,6 +28,7 @@ document
   .getElementById('signupForm')
   ?.addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent form submission
+
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
