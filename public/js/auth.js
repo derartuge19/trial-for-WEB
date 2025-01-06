@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/auth'; // Ensure this matches your backend API endpoint
+const API_URL = 'http://localhost:7712/auth'; // Ensure this matches your backend API endpoint
 
 // Function to handle signup
 async function signup(username, email, password, firstName, lastName) {
@@ -24,7 +24,7 @@ async function signup(username, email, password, firstName, lastName) {
 document
   .getElementById('signupForm')
   ?.addEventListener('submit', function (event) {
-    event.preventDefault();
+    event.preventDefault(); // Prevent form submission
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;

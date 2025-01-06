@@ -39,7 +39,7 @@
           window.location.href = 'login.html'; // Redirect to login if no token
         }
 
-        const response = await fetch('http://localhost:3000/tasks', {
+        const response = await fetch('http://localhost:7712/tasks', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,

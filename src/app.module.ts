@@ -13,7 +13,7 @@ import { UserModule } from './user/user.module';
     ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }), // Global config module
     MongooseModule.forRoot(
       process.env.MONGODB_URI || 'mongodb://localhost:27017/task-manager',
-    ), // Database connection using env var
+    ),
     TaskModule, // Task management module
     UserModule, // User management module
     AuthModule, // Authentication module

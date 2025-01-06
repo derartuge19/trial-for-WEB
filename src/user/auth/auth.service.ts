@@ -21,10 +21,11 @@ export class AuthService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
+  // Validate the user's login credentials
   async validateUser(loginUserDto: LoginUserDto) {
     const user = await this.userService.findOne(loginUserDto.username);
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND); // User not found
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
     const passwordMatch = await this.bcryptService.comparePassword(
@@ -32,27 +33,55 @@ export class AuthService {
       user.password,
     );
     if (passwordMatch) {
-      return { message: 'Authentication successful', statusCode: 200 }; // Authentication successful
+      return { message: 'Authentication successful', statusCode: 200 };
     } else {
-      throw new HttpException('Incorrect password', HttpStatus.UNAUTHORIZED); // Password does not match
+      throw new HttpException('Incorrect password', HttpStatus.UNAUTHORIZED);
     }
   }
 
+  // Handle user login and JWT token generation
   async login(loginUserDto: LoginUserDto) {
     try {
       await this.validateUser(loginUserDto);
       const payload = { username: loginUserDto.username };
+
+      const access_token = this.jwtService.sign(payload, {
+        expiresIn: '1h',
+      });
+
       return {
-        access_token: this.jwtService.sign(payload),
+        access_token,
         message: 'Authentication successful',
         statusCode: 200,
       };
     } catch (error) {
-      throw error; // Now throwing the HttpException
+      console.error(
+        `Login error for user: ${loginUserDto.username}, Error: ${error.message}`,
+      );
+      throw error;
     }
   }
 
+  // Handle user signup, check for existing user, create user, and send email notification
   async signup(signupUserDto: SignupUserDto) {
+    const existingUser = await this.userModel.findOne({
+      $or: [
+        { username: signupUserDto.username },
+        { email: signupUserDto.email },
+      ],
+    });
+
+    if (existingUser) {
+      throw new HttpException(
+        'Username or email already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const hashedPassword = await this.bcryptService.hashingPassword(
+      signupUserDto.password,
+    );
+
     const createdUser = new this.userModel({
       _id: new mongoose.Types.ObjectId(),
       name: {
@@ -61,25 +90,28 @@ export class AuthService {
       },
       username: signupUserDto.username,
       email: signupUserDto.email,
-      password: await this.bcryptService.hashingPassword(
-        signupUserDto.password,
-      ),
+      password: hashedPassword,
     });
 
     const emailNotification = {
       from: this.configService.get<string>('SENDER'),
       to: createdUser.email,
       subject: 'Your account created successfully!',
-      text: 'Your account created with our app, please head to "take a tour", to get started using our app',
+      text: 'Your account has been created. Please explore our app to get started.',
     };
+
     try {
       if (await createdUser.save()) {
         await this.emailNotificationService.send(emailNotification);
-        console.log('email notification sent');
+        console.log(
+          `User ${signupUserDto.username} created and email notification sent.`,
+        );
         return { message: 'User created successfully', statusCode: 201 };
       }
     } catch (error) {
-      console.log(error);
+      console.error(
+        `Signup error for user: ${signupUserDto.username}, email: ${signupUserDto.email}, Error: ${error.message}`,
+      );
       throw new HttpException(
         'Error creating user',
         HttpStatus.INTERNAL_SERVER_ERROR,
