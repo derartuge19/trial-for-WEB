@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Tasks - Task Manager</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/css/styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1 class="mb-4 text-center">Your Tasks</h1>
+
+      <div id="tasksList" class="row">
+        <!-- Tasks will be dynamically injected here -->
+      </div>
+
+      <a href="add-task.html" class="btn btn-success mt-4">Add New Task</a>
+      <a href="login.html" class="btn btn-danger mt-4 ms-2" onclick="logout()"
+        >Logout</a
+      >
+    </div>
+
+    <script src="js/task.js"></script>
+    <script>
+      // Logout functionality to remove token and redirect to login page
+      function logout() {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+      }
+
+      // Fetch tasks from the backend
+      async function fetchTasks() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = 'login.html'; // Redirect to login if no token
+        }
+
+        const response = await fetch('http://localhost:3000/tasks', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          const tasksList = document.getElementById('tasksList');
+          tasksList.innerHTML = '';
+
+          data.tasks.forEach((task) => {
+            tasksList.innerHTML += `
+              <div class="col-md-4 mb-4">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">${task.title}</h5>
+                    <p class="card-text">${task.description}</p>
+                    <button class="btn btn-warning btn-sm" onclick="editTask(${task.id})">Edit</button>
+                    <button class="btn btn-danger btn-sm ms-2" onclick="deleteTask(${task.id})">Delete</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          alert('Failed to load tasks');
+        }
+      }
+
+      fetchTasks(); // Fetch tasks when page loads
+    </script>
+  </body>
+</html>

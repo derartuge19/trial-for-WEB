@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Task - Task Manager</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/css/styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1 class="mb-4 text-center">Add New Task</h1>
+      <form id="addTaskForm">
+        <div class="mb-3">
+          <label for="taskTitle" class="form-label">Task Title</label>
+          <input type="text" class="form-control" id="taskTitle" required />
+        </div>
+        <div class="mb-3">
+          <label for="taskDescription" class="form-label"
+            >Task Description</label
+          >
+          <textarea
+            class="form-control"
+            id="taskDescription"
+            required
+          ></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+        <a href="tasks.html" class="btn btn-secondary ms-2">Back to Tasks</a>
+      </form>
+    </div>
+
+    <script src="js/task.js"></script>
+    <script>
+      document
+        .getElementById('addTaskForm')
+        .addEventListener('submit', async (event) => {
+          event.preventDefault();
+
+          const token = localStorage.getItem('token');
+          if (!token) {
+            window.location.href = 'login.html';
+          }
+
+          const taskTitle = document.getElementById('taskTitle').value;
+          const taskDescription =
+            document.getElementById('taskDescription').value;
+
+          const response = await fetch('http://localhost:3000/tasks', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              title: taskTitle,
+              description: taskDescription,
+            }),
+          });
+
+          if (response.ok) {
+            window.location.href = 'tasks.html';
+          } else {
+            alert('Failed to add task');
+          }
+        });
+    </script>
+  </body>
+</html>
