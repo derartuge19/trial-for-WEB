@@ -3,7 +3,6 @@ const API_URL = 'http://localhost:7712/tasks'; // Backend endpoint
 // Function to add a new task
 async function addTask(title, description) {
   const token = localStorage.getItem('token');
-
   if (!token) {
     alert('You are not authorized. Please log in.');
     window.location.href = 'login.html';
@@ -21,7 +20,7 @@ async function addTask(title, description) {
     });
 
     if (response.ok) {
-      const newTask = await response.json(); // Parse the newly added task from the response
+      const newTask = await response.json();
       addTaskToDOM(newTask); // Add the task dynamically to the DOM
       alert('Task added successfully!');
     } else if (response.status === 401) {
@@ -49,7 +48,7 @@ function addTaskToDOM(task) {
         <div class="card-body">
           <h5 class="card-title">${task.title}</h5>
           <p class="card-text">${task.description}</p>
-          <button class="btn btn-warning btn-sm" onclick="editTask('${task._id}', '${task.title}', '${task.description}')">Edit</button>
+          <button class="btn btn-warning btn-sm" id="editButton-${task._id}">Edit</button>
           <button class="btn btn-danger btn-sm ms-2" onclick="deleteTask('${task._id}')">Delete</button>
         </div>
       </div>
@@ -57,6 +56,13 @@ function addTaskToDOM(task) {
   `;
 
   tasksList.innerHTML += taskHTML;
+
+  // Attach the edit functionality to the newly added "Edit" button
+  document
+    .getElementById(`editButton-${task._id}`)
+    .addEventListener('click', function () {
+      editTask(task._id, task.title, task.description);
+    });
 }
 
 // Fetch tasks from the backend
@@ -78,7 +84,7 @@ async function fetchTasks() {
 
     if (response.ok) {
       const data = await response.json();
-      console.log('Fetched Data:', data); // Log the fetched data
+      console.log('Fetched Data:', data);
 
       const tasksList = document.getElementById('tasksList');
       tasksList.innerHTML = ''; // Clear existing tasks
@@ -107,56 +113,9 @@ async function fetchTasks() {
 
 // Edit a task
 function editTask(id, title, description) {
-  // Pre-fill the form with the current task details
-  document.getElementById('taskTitle').value = title;
-  document.getElementById('taskDescription').value = description;
-  const taskForm = document.getElementById('addTaskForm');
-  taskForm.onsubmit = function (event) {
-    event.preventDefault();
-
-    const updatedTitle = document.getElementById('taskTitle').value;
-    const updatedDescription = document.getElementById('taskDescription').value;
-
-    updateTask(id, updatedTitle, updatedDescription); // Update the task
-  };
-}
-
-// Function to update a task
-async function updateTask(id, title, description) {
-  const token = localStorage.getItem('token');
-
-  if (!token) {
-    alert('You are not authorized. Please log in.');
-    window.location.href = 'login.html';
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ title, description }),
-    });
-
-    if (response.ok) {
-      const updatedTask = await response.json();
-      document
-        .getElementById(`task-${id}`)
-        .querySelector('.card-title').textContent = updatedTask.title;
-      document
-        .getElementById(`task-${id}`)
-        .querySelector('.card-text').textContent = updatedTask.description;
-      alert('Task updated successfully!');
-    } else {
-      alert('Failed to update task. Please try again.');
-    }
-  } catch (error) {
-    console.error('Network error:', error);
-    alert('An error occurred while updating the task.');
-  }
+  // Store the task ID in localStorage for editing
+  localStorage.setItem('editTaskId', id);
+  window.location.href = 'add-task.html'; // Redirect to the add-task page
 }
 
 // Delete a task
@@ -164,7 +123,6 @@ async function deleteTask(id) {
   const token = localStorage.getItem('token');
 
   if (!token) {
-    alert('You are not authorized. Please log in.');
     window.location.href = 'login.html';
     return;
   }
@@ -179,7 +137,7 @@ async function deleteTask(id) {
 
     if (response.ok) {
       document.getElementById(`task-${id}`).remove(); // Remove task from DOM
-      alert('Task deleted successfully!');
+      // alert('Task deleted successfully!');
     } else {
       alert('Failed to delete task. Please try again.');
     }

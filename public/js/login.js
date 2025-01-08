@@ -15,7 +15,7 @@ async function login(username, password) {
     // Save the token in localStorage
     localStorage.setItem('token', data.token); // Save the received token
 
-    alert('Login successful!');
+    // alert('Login successful!');
     window.location.href = 'task.html'; // Redirect to task page after successful login
   } else {
     alert(data.message || 'Login failed');

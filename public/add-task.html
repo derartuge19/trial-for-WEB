@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Add Task - Task Manager</title>
+    <title>Task Manager</title>
     <link
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
@@ -12,7 +12,7 @@
   </head>
   <body>
     <div class="container mt-5">
-      <h1 class="mb-4 text-center">Add New Task</h1>
+      <h1 class="mb-4 text-center" id="formTitle">Add New Task</h1>
       <form id="addTaskForm">
         <div class="form-group">
           <label for="taskTitle">Task Title</label>
@@ -58,9 +58,16 @@
           const taskDescription =
             document.getElementById('taskDescription').value;
 
-          // Send the request to add the task
-          const response = await fetch('http://localhost:7712/tasks', {
-            method: 'POST',
+          // Check if we are editing or adding a task
+          const taskId = localStorage.getItem('editTaskId');
+          const url = taskId
+            ? `http://localhost:7712/tasks/${taskId}`
+            : 'http://localhost:7712/tasks';
+          const method = taskId ? 'PUT' : 'POST'; // PUT for editing, POST for adding
+
+          // Send the request to add or update the task
+          const response = await fetch(url, {
+            method: method,
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
@@ -72,12 +79,43 @@
           });
 
           if (response.ok) {
-            alert('Task added successfully!');
-            window.location.href = 'task-list.html'; // Redirect to task list page
+            alert(
+              taskId
+                ? 'Task updated successfully!'
+                : 'Task added successfully!',
+            );
+            window.location.href = 'task.html'; // Redirect to task list page
           } else {
-            alert('Failed to add task');
+            alert('Failed to save task');
           }
         });
+
+      // Check if there's a task to edit
+      const taskId = localStorage.getItem('editTaskId');
+      if (taskId) {
+        document.getElementById('formTitle').textContent = 'Edit Task';
+        loadTaskDetails(taskId);
+      }
+
+      // Function to load the task details into the form for editing
+      async function loadTaskDetails(taskId) {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:7712/tasks/${taskId}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const task = await response.json();
+          document.getElementById('taskTitle').value = task.title;
+          document.getElementById('taskDescription').value = task.description;
+        } else {
+          alert('Failed to load task details');
+          window.location.href = 'task.html'; // Redirect if task not found
+        }
+      }
     </script>
 
     <script src="./js/addtask.js"></script>
