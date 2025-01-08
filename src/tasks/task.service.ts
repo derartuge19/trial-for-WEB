@@ -12,39 +12,48 @@ export class TaskService {
     private readonly userService: UserService, // Inject UserService
   ) {}
 
+  // Create a new task
   async create(createTaskDto: any): Promise<Task> {
     const createdTask = new this.taskModel(createTaskDto);
     return createdTask.save();
   }
 
+  // Get all tasks
   async getAll(): Promise<Task[]> {
     return await this.taskModel.find().exec();
   }
 
+  // Get a task by ID
   async getByID(id: Types.ObjectId): Promise<Task | null> {
-    return await this.taskModel.findById(id).populate('assignedTo').exec();
+    return await this.taskModel
+      .findById(id)
+      .populate('assignedTo') // Populates the assigned users
+      .exec();
   }
 
+  // Update an existing task
   async update(
     id: Types.ObjectId,
     updateTaskDto: UpdateTaskDto,
   ): Promise<Task | null> {
     return await this.taskModel
       .findByIdAndUpdate(id, { $set: updateTaskDto }, { new: true })
-      .populate('assignedTo')
+      .populate('assignedTo') // Populates the assigned users after update
       .exec();
   }
 
+  // Delete a task by ID
   async delete(
     id: Types.ObjectId,
   ): Promise<{ acknowledged: boolean; deletedCount: number }> {
     return await this.taskModel.deleteOne({ _id: id });
   }
 
+  // Add assignees to a task
   async addAssignees(taskId: string, userIds: string[]): Promise<Task | null> {
-    const objectIds = userIds.map((id) => new Types.ObjectId(id)); // Convert all IDs to ObjectId
+    const objectIds = userIds.map((id) => new Types.ObjectId(id)); // Convert user IDs to ObjectIds
 
-    // Fetch the full User objects based on ObjectId array
+    // Fetch full User objects based on ObjectId array
     const users = await this.userService.getUsersByIds(objectIds);
 
     const task = await this.taskModel.findById(taskId);
@@ -52,8 +61,10 @@ export class TaskService {
       throw new Error('Task not found');
     }
 
-    // Populate the assignees field with User objects
-    task.assignedTo = [...new Set([...task.assignedTo, ...users])]; // Ensures no duplicate users
+    // Ensure there are no duplicate users by using a Set
+    task.assignedTo = Array.from(new Set([...task.assignedTo, ...users]));
+
+    // Save the task after assigning users
     return await task.save();
   }
 }

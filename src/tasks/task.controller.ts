@@ -12,41 +12,58 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Types } from 'mongoose'; // Import Types from mongoose
 
-@Controller()
+@Controller('tasks') // Set a base route for all task-related endpoints
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  // Task CRUD (Create, Read, Update, Delete) Operations
-
-  @Get('/tasks/')
+  // Get all tasks
+  @Get()
   async getTasks() {
     return this.taskService.getAll();
   }
 
-  @Get('/tasks/:id')
+  // Get a task by ID
+  @Get(':id') // No need to specify /tasks/ explicitly in each endpoint
   async getTaskByID(@Param('id') id: string) {
+    // Convert string to ObjectId for proper querying
+    if (!Types.ObjectId.isValid(id)) {
+      throw new Error('Invalid ID format');
+    }
+
     const objectId = new Types.ObjectId(id); // Convert string to ObjectId
     return this.taskService.getByID(objectId);
   }
 
-  @Post('/tasks/')
+  // Create a new task
+  @Post()
   async create(@Body() createTaskDto: CreateTaskDto) {
     return this.taskService.create(createTaskDto);
   }
 
-  @Put('/tasks/:id')
+  // Update a task by ID
+  @Put(':id')
   async update(
-    @Param('id') id: string, // Change to string to handle input as string
+    @Param('id') id: string, // Handle input as string for consistency
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    const objectId = new Types.ObjectId(id); // Convert string to ObjectId
+    // Convert string to ObjectId for proper querying
+    if (!Types.ObjectId.isValid(id)) {
+      throw new Error('Invalid ID format');
+    }
+
+    const objectId = new Types.ObjectId(id);
     return this.taskService.update(objectId, updateTaskDto);
   }
 
-  @Delete('/tasks/:id')
+  // Delete a task by ID
+  @Delete(':id')
   async delete(@Param('id') id: string) {
-    // Change to string to handle input as string
-    const objectId = new Types.ObjectId(id); // Convert string to ObjectId
+    // Convert string to ObjectId for proper querying
+    if (!Types.ObjectId.isValid(id)) {
+      throw new Error('Invalid ID format');
+    }
+
+    const objectId = new Types.ObjectId(id);
     return this.taskService.delete(objectId);
   }
 }

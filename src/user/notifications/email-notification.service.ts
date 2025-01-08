@@ -8,19 +8,28 @@ export class EmailNotificationService {
   private mailTransport;
 
   constructor(private configService: ConfigService) {
-    const SMTP_HOST = this.configService.get<string>('SMTP_HOST');
-    const SMTP_PORT = this.configService.get<number>('SMTP_PORT');
+    const SMTP_HOST =
+      this.configService.get<string>('SMTP_HOST') || 'smtp.gmail.com';
+    const SMTP_PORT = this.configService.get<number>('SMTP_PORT') || 587;
+    const SMTP_USER = this.configService.get<string>('SMTP_USER'); // Gmail address (your-email@gmail.com)
+    const SMTP_PASS = this.configService.get<string>('SMTP_PASS'); // App password generated in Google account
 
+    // Creating the transporter using Gmail SMTP settings
     this.mailTransport = createTransport({
       host: SMTP_HOST,
       port: SMTP_PORT,
-      secure: false, // Set to true if your SMTP server requires a secure connection
+      secure: false, // Use TLS (recommended for Gmail)
+      auth: {
+        user: SMTP_USER,
+        pass: SMTP_PASS, // App password here
+      },
       tls: {
-        rejectUnauthorized: false, // Set to true if your SMTP server uses a self-signed certificate
+        rejectUnauthorized: false, // To handle self-signed certificates
       },
     });
   }
 
+  // Send an email
   async send(sendEmailNotificationDto: SendEmailNotificationDto) {
     const { from, to, subject, text } = sendEmailNotificationDto;
 

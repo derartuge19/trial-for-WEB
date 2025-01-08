@@ -12,7 +12,7 @@ async function signup(username, email, password, firstName, lastName) {
 
   if (response.ok) {
     alert('Signup successful!');
-    window.location.href = 'login.html'; // Redirect to login page after successful signup
+    window.location.href = 'task.html'; // Redirect to login page after successful signup
   } else {
     alert(data.message || 'Signup failed');
   }
@@ -23,6 +23,7 @@ document
   .getElementById('signupForm')
   ?.addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent form submission
+
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
