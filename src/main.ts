@@ -5,9 +5,14 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+
+  // Enable CORS
   app.enableCors();
 
+  // Enable validation globally
+  app.useGlobalPipes(new ValidationPipe());
+
+  // Setup Swagger API documentation
   const config = new DocumentBuilder()
     .setTitle('Task Management System')
     .setDescription(
@@ -23,4 +28,5 @@ async function bootstrap() {
   await app.listen(7712);
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
+
 bootstrap();
