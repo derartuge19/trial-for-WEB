@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+<<<<<<< HEAD
   // Global validation pipe
   app.useGlobalPipes(new ValidationPipe());
 
@@ -13,6 +14,15 @@ async function bootstrap() {
   app.enableCors();
 
   // Swagger configuration
+=======
+  // Enable CORS
+  app.enableCors();
+
+  // Enable validation globally
+  app.useGlobalPipes(new ValidationPipe());
+
+  // Setup Swagger API documentation
+>>>>>>> c4ea885d8e92973552c0d7dfdbfe0c0c23371359
   const config = new DocumentBuilder()
     .setTitle('Task Management System')
     .setDescription(
