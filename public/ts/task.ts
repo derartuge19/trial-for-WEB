@@ -1,7 +1,16 @@
-const API_URL = 'http://localhost:7712/tasks'; // Backend endpoint
+// In your other TypeScript files like addtask.ts, auth.ts, etc.
+import { API_URL } from './config';
+
+
+// Define the Task type
+interface Task {
+  _id: string;
+  title: string;
+  description: string;
+}
 
 // Function to add a new task
-async function addTask(title, description) {
+async function addTask(title: string, description: string): Promise<void> {
   const token = localStorage.getItem('token');
   if (!token) {
     alert('You are not authorized. Please log in.');
@@ -20,7 +29,7 @@ async function addTask(title, description) {
     });
 
     if (response.ok) {
-      const newTask = await response.json();
+      const newTask: Task = await response.json();
       addTaskToDOM(newTask); // Add the task dynamically to the DOM
       alert('Task added successfully!');
     } else if (response.status === 401) {
@@ -39,8 +48,8 @@ async function addTask(title, description) {
 }
 
 // Function to dynamically render a task in the DOM
-function addTaskToDOM(task) {
-  const tasksList = document.getElementById('tasksList');
+function addTaskToDOM(task: Task): void {
+  const tasksList = document.getElementById('tasksList') as HTMLElement;
 
   const taskHTML = `
     <div class="col-md-4 mb-4" id="task-${task._id}">
@@ -60,13 +69,13 @@ function addTaskToDOM(task) {
   // Attach the edit functionality to the newly added "Edit" button
   document
     .getElementById(`editButton-${task._id}`)
-    .addEventListener('click', function () {
+    ?.addEventListener('click', function () {
       editTask(task._id, task.title, task.description);
     });
 }
 
 // Fetch tasks from the backend
-async function fetchTasks() {
+async function fetchTasks(): Promise<void> {
   const token = localStorage.getItem('token');
   if (!token) {
     alert('Please login to continue');
@@ -83,10 +92,10 @@ async function fetchTasks() {
     });
 
     if (response.ok) {
-      const data = await response.json();
+      const data: Task[] = await response.json();
       console.log('Fetched Data:', data);
 
-      const tasksList = document.getElementById('tasksList');
+      const tasksList = document.getElementById('tasksList') as HTMLElement;
       tasksList.innerHTML = ''; // Clear existing tasks
 
       if (Array.isArray(data)) {
@@ -112,14 +121,14 @@ async function fetchTasks() {
 }
 
 // Edit a task
-function editTask(id, title, description) {
+function editTask(id: string, title: string, description: string): void {
   // Store the task ID in localStorage for editing
   localStorage.setItem('editTaskId', id);
   window.location.href = 'add-task.html'; // Redirect to the add-task page
 }
 
 // Delete a task
-async function deleteTask(id) {
+async function deleteTask(id: string): Promise<void> {
   const token = localStorage.getItem('token');
 
   if (!token) {
@@ -136,7 +145,7 @@ async function deleteTask(id) {
     });
 
     if (response.ok) {
-      document.getElementById(`task-${id}`).remove(); // Remove task from DOM
+      document.getElementById(`task-${id}`)?.remove(); // Remove task from DOM
       // alert('Task deleted successfully!');
     } else {
       alert('Failed to delete task. Please try again.');
@@ -151,8 +160,8 @@ async function deleteTask(id) {
 document.getElementById('addTaskForm')?.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  const taskTitle = document.getElementById('taskTitle').value;
-  const taskDescription = document.getElementById('taskDescription').value;
+  const taskTitle = (document.getElementById('taskTitle') as HTMLInputElement).value;
+  const taskDescription = (document.getElementById('taskDescription') as HTMLInputElement).value;
 
   addTask(taskTitle, taskDescription); // Add task and render it
 });

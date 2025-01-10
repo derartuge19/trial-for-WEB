@@ -1,8 +1,14 @@
-const API_URL = 'http://localhost:7712/tasks'; // Backend API URL
+import { API_URL } from './config';
+
+// Define an interface for the task data
+interface TaskData {
+  title: string;
+  description: string;
+}
 
 // Function to add a new task
-async function addTask(title, description) {
-  const token = localStorage.getItem('token'); // Retrieve token from local storage
+async function addTask(title: string, description: string): Promise<void> {
+  const token: string | null = localStorage.getItem('token'); // Retrieve token from local storage
 
   if (!token) {
     alert('You are not authorized. Please log in.');
@@ -12,7 +18,7 @@ async function addTask(title, description) {
 
   try {
     // Make a POST request to the backend to add the task
-    const response = await fetch(API_URL, {
+    const response: Response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`, // Attach the token for authentication
@@ -30,7 +36,7 @@ async function addTask(title, description) {
       localStorage.removeItem('token'); // Clear token
       window.location.href = 'login.html'; // Redirect to login page
     } else {
-      const errorMessage = await response.text(); // Get error message from response
+      const errorMessage: string = await response.text(); // Get error message from response
       console.error('Error adding task:', errorMessage);
       alert('Failed to add task. Please try again.');
     }
@@ -41,11 +47,14 @@ async function addTask(title, description) {
 }
 
 // Add event listener to the add task form
-document.getElementById('addTaskForm')?.addEventListener('submit', (event) => {
-  event.preventDefault(); // Prevent default form submission
+const addTaskForm: HTMLFormElement | null = document.getElementById('addTaskForm') as HTMLFormElement;
+if (addTaskForm) {
+  addTaskForm.addEventListener('submit', (event: Event) => {
+    event.preventDefault(); // Prevent default form submission
 
-  const taskTitle = document.getElementById('taskTitle').value; // Get task title
-  const taskDescription = document.getElementById('taskDescription').value; // Get task description
+    const taskTitle: string = (document.getElementById('taskTitle') as HTMLInputElement).value; // Get task title
+    const taskDescription: string = (document.getElementById('taskDescription') as HTMLInputElement).value; // Get task description
 
-  addTask(taskTitle, taskDescription); // Call the function to add the task
-});
+    addTask(taskTitle, taskDescription); // Call the function to add the task
+  });
+}

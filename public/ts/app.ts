@@ -1,9 +1,19 @@
-const API_URL = 'http://localhost:7712/tasks'; // Replace with your NestJS backend URL
+// In your other TypeScript files like addtask.ts, auth.ts, etc.
+import { API_URL } from './config';
+
+
+// Define a Task type (assuming a basic structure, adjust according to actual task data)
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  // Add other task properties as needed
+}
 
 // Function to fetch tasks with authorization
-async function fetchTasks() {
+async function fetchTasks(): Promise<Task[] | void> {
   // Retrieve the JWT token from localStorage
-  const token = localStorage.getItem('token');
+  const token: string | null = localStorage.getItem('token');
 
   if (!token) {
     // If no token, redirect the user to the login page
@@ -14,7 +24,7 @@ async function fetchTasks() {
 
   try {
     // Make an authorized request to the tasks endpoint
-    const response = await fetch(API_URL, {
+    const response: Response = await fetch(API_URL, {
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the Authorization header
       },
@@ -30,16 +40,16 @@ async function fetchTasks() {
 
     // Handle successful response
     if (response.ok) {
-      const data = await response.json();
+      const data: Task[] = await response.json();
       console.log('Fetched tasks:', data);
       return data; // Return the fetched data
     } else {
       // Handle other server errors
-      const errorMessage = await response.text();
+      const errorMessage: string = await response.text();
       console.error('Error fetching tasks:', errorMessage);
       alert('Failed to fetch tasks. Please try again later.');
     }
-  } catch (error) {
+  } catch (error: any) {
     // Handle network errors or unexpected issues
     console.error('Network error:', error);
     alert('An error occurred. Please check your connection and try again.');
